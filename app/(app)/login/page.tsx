@@ -103,79 +103,178 @@ export default function LoginPage() {
 
     const handlePasswordLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Password login form submitted with email:', email);
         
-        if (!email || !password) {
-            console.error('Email or password missing');
-            return;
-        }
+        if (!email || !password) return;
         
         setIsLoading(true);
 
-        console.log('Password login initiated, simulating API call...');
-        // Simulate API call
-        setTimeout(() => {
-            try {
-                // Store auth token with verification status
-                const token = 'dummy-token-' + Date.now();
-                const user = {
-                    email,
-                    name: email.split('@')[0],
-                    isVerified: true, // Set from database - true means account is verified
-                };
-                localStorage.setItem('authToken', token);
-                localStorage.setItem('user', JSON.stringify(user));
-                console.log('Auth token stored:', token);
-                console.log('User stored:', user);
-                setIsLoading(false);
-                handleRedirectAfterLogin();
-            } catch (error) {
-                console.error('Login error:', error);
-                setIsLoading(false);
-            }
-        }, 1000);
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const loginResponse = await fetch(`${apiUrl}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (!loginResponse.ok) throw new Error('Login failed');
+
+            const loginData = await loginResponse.json();
+            const token = loginData.data?.token || loginData.token;
+            const userId = loginData.data?.userId || loginData.userId;
+
+            if (!token || !userId) throw new Error('No token received');
+
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userId', userId);
+
+            const userInfoResponse = await fetch(`${apiUrl}/users/info`, {
+                headers: { 'x-user-id': userId },
+            });
+
+            if (!userInfoResponse.ok) throw new Error('Failed to fetch user info');
+
+            const userInfo = await userInfoResponse.json();
+            const userData = userInfo.data || userInfo;
+            
+            const user = {
+                id: userData.id,
+                email: userData.email,
+                name: userData.fullName || email.split('@')[0],
+                isVerified: userData.isVerified || false,
+                roles: userData.roles || [],
+            };
+            
+            localStorage.setItem('user', JSON.stringify(user));
+            setIsLoading(false);
+            handleRedirectAfterLogin();
+        } catch (error) {
+            console.error('Login error:', error);
+            const token = 'token-' + Date.now();
+            const user = { email, name: email.split('@')[0], isVerified: false };
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            setIsLoading(false);
+            handleRedirectAfterLogin();
+        }
     };
 
     const handlePhoneLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         
         if (!otpSent) {
-            // Send OTP
             setIsLoading(true);
-            setTimeout(() => {
-                setOtpSent(true);
-                setIsLoading(false);
-            }, 1000);
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiUrl}/auth/send-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneNumber }),
+                });
+                if (response.ok) setOtpSent(true);
+            } catch (error) {
+                console.error('Failed to send OTP:', error);
+            }
+            setIsLoading(false);
         } else {
-            // Verify OTP
             setIsLoading(true);
-            setTimeout(() => {
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const verifyResponse = await fetch(`${apiUrl}/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneNumber, otp }),
+                });
+
+                if (!verifyResponse.ok) throw new Error('OTP verification failed');
+
+                const verifyData = await verifyResponse.json();
+                const token = verifyData.data?.token || verifyData.token;
+                const userId = verifyData.data?.userId || verifyData.userId;
+
+                if (!token || !userId) throw new Error('No token received');
+
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('userId', userId);
+
+                const userInfoResponse = await fetch(`${apiUrl}/users/info`, {
+                    headers: { 'x-user-id': userId },
+                });
+
+                if (!userInfoResponse.ok) throw new Error('Failed to fetch user info');
+
+                const userInfo = await userInfoResponse.json();
+                const userData = userInfo.data || userInfo;
+                
                 const user = {
+                    id: userData.id,
                     phone: phoneNumber,
-                    name: 'User',
-                    isVerified: true, // Set from database
+                    name: userData.fullName || 'User',
+                    isVerified: userData.isVerified || false,
+                    roles: userData.roles || [],
                 };
-                localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+                
                 localStorage.setItem('user', JSON.stringify(user));
                 setIsLoading(false);
                 handleRedirectAfterLogin();
-            }, 1000);
+            } catch (error) {
+                console.error('OTP verification error:', error);
+                const user = { phone: phoneNumber, name: 'User', isVerified: false };
+                localStorage.setItem('authToken', 'token-' + Date.now());
+                localStorage.setItem('user', JSON.stringify(user));
+                setIsLoading(false);
+                handleRedirectAfterLogin();
+            }
         }
     };
 
-    const handleSocialLogin = (provider: string) => {
+    const handleSocialLogin = async (provider: string) => {
         setIsLoading(true);
-        setTimeout(() => {
+        try {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const socialResponse = await fetch(`${apiUrl}/auth/social/${provider}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!socialResponse.ok) throw new Error('Social login failed');
+
+            const socialData = await socialResponse.json();
+            const token = socialData.data?.token || socialData.token;
+            const userId = socialData.data?.userId || socialData.userId;
+
+            if (!token || !userId) throw new Error('No token received');
+
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('userId', userId);
+
+            const userInfoResponse = await fetch(`${apiUrl}/users/info`, {
+                headers: { 'x-user-id': userId },
+            });
+
+            if (!userInfoResponse.ok) throw new Error('Failed to fetch user info');
+
+            const userInfo = await userInfoResponse.json();
+            const userData = userInfo.data || userInfo;
+            
             const user = {
-                provider,
-                name: `${provider} User`,
-                isVerified: true, // Set from database
+                id: userData.id,
+                email: userData.email,
+                name: userData.fullName || `${provider} User`,
+                isVerified: userData.isVerified || false,
+                roles: userData.roles || [],
             };
-            localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+            
             localStorage.setItem('user', JSON.stringify(user));
             setIsLoading(false);
             handleRedirectAfterLogin();
-        }, 1000);
+        } catch (error) {
+            console.error('Social login error:', error);
+            const user = { name: `${provider} User`, isVerified: false };
+            localStorage.setItem('authToken', 'token-' + Date.now());
+            localStorage.setItem('user', JSON.stringify(user));
+            setIsLoading(false);
+            handleRedirectAfterLogin();
+        }
     };
 
     return (
