@@ -91,7 +91,26 @@ export default function ProfilePage() {
             } else {
                 setIsLoggedIn(true);
                 
-                // Fetch fresh user data from database
+                // First, try to load from localStorage (instant display)
+                const user = getUser();
+                if (user) {
+                    console.log('📦 Loading initial profile data from localStorage');
+                    setProfileData({
+                        fullName: user.name || '',
+                        email: user.email || '',
+                        phone: user.phone || '',
+                        address: user.address || '',
+                        city: user.city || '',
+                        province: user.province || '',
+                        avatarUrl: user.avatarUrl || '',
+                        isVerified: user.isVerified === true,
+                        isMerchantVerified: user.isMerchantVerified === true,
+                        isRiderVerified: user.isRiderVerified === true,
+                        roles: user.roles || [],
+                    });
+                }
+                
+                // Then, fetch fresh user data from database
                 await fetchUserProfile();
             }
             setIsLoading(false);
@@ -1128,6 +1147,32 @@ export default function ProfilePage() {
                         </div>
                     )}
 
+                    {/* Debug Info - Show current user data state */}
+                    {isLoggedIn && (
+                        <Card className="bg-gray-50 border-gray-200 mb-6">
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Auth Status</p>
+                                        <p className="font-mono text-green-700">✓ Logged In</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Profile Data Loaded</p>
+                                        <p className="font-mono">{profileData.fullName ? '✓ Yes' : '✗ No'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Name</p>
+                                        <p className="font-mono text-gray-600">{profileData.fullName || '(empty)'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Email</p>
+                                        <p className="font-mono text-gray-600">{profileData.email || '(empty)'}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Quick Info Card - Show fetched data from DB */}
                     <Card className="bg-blue-50 border-blue-200 mb-6">
                         <CardContent className="pt-6">
@@ -1203,9 +1248,21 @@ export default function ProfilePage() {
                     <div className="space-y-6">
                         {/* Profile Information */}
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Profile Information</CardTitle>
-                                <CardDescription>Update your personal details and contact information</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Profile Information</CardTitle>
+                                    <CardDescription>Update your personal details and contact information</CardDescription>
+                                </div>
+                                <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => fetchUserProfile()}
+                                    disabled={isLoading}
+                                    title="Refresh profile data from database"
+                                >
+                                    🔄 Refresh
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <form onSubmit={handleProfileSubmit} className="space-y-6">
