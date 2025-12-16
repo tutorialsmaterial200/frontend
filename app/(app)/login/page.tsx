@@ -140,7 +140,14 @@ export default function LoginPage() {
                 id: userData.id,
                 email: userData.email,
                 name: userData.fullName || email.split('@')[0],
+                phone: userData.phone || '',
+                address: userData.address || '',
+                city: userData.city || userData.state || '',
+                province: userData.province || userData.state || '',
+                avatarUrl: userData.avatarUrl || '',
                 isVerified: userData.isVerified === true,
+                isMerchantVerified: userData.isMerchantVerified === true,
+                isRiderVerified: userData.isRiderVerified === true,
                 roles: userData.roles || [],
             };
             
@@ -207,9 +214,16 @@ export default function LoginPage() {
                 
                 const user = {
                     id: userData.id,
-                    phone: phoneNumber,
+                    email: userData.email || '',
                     name: userData.fullName || 'User',
+                    phone: userData.phone || phoneNumber,
+                    address: userData.address || '',
+                    city: userData.city || userData.state || '',
+                    province: userData.province || userData.state || '',
+                    avatarUrl: userData.avatarUrl || '',
                     isVerified: userData.isVerified === true,
+                    isMerchantVerified: userData.isMerchantVerified === true,
+                    isRiderVerified: userData.isRiderVerified === true,
                     roles: userData.roles || [],
                 };
                 
@@ -260,7 +274,14 @@ export default function LoginPage() {
                 id: userData.id,
                 email: userData.email,
                 name: userData.fullName || `${provider} User`,
+                phone: userData.phone || '',
+                address: userData.address || '',
+                city: userData.city || userData.state || '',
+                province: userData.province || userData.state || '',
+                avatarUrl: userData.avatarUrl || userData.profilePictureUrl || '',
                 isVerified: userData.isVerified === true,
+                isMerchantVerified: userData.isMerchantVerified === true,
+                isRiderVerified: userData.isRiderVerified === true,
                 roles: userData.roles || [],
             };
             
