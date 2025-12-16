@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -64,14 +63,27 @@ export default function AddSubcategoryPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`${API_URL}/categories`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiUrl}/categories`);
                 const data = await response.json();
                 if (response.ok) {
-                    const categoriesData = Array.isArray(data) ? data : (data.data || data.categories || []);
+                    let categoriesData: Category[] = [];
+                    if (Array.isArray(data)) {
+                        categoriesData = data;
+                    } else if (data.data?.categories && Array.isArray(data.data.categories)) {
+                        categoriesData = data.data.categories;
+                    } else if (data.categories && Array.isArray(data.categories)) {
+                        categoriesData = data.categories;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        categoriesData = data.data;
+                    }
                     setCategories(categoriesData);
+                } else {
+                    setCategories([]);
                 }
             } catch (err) {
                 console.error('Error fetching categories:', err);
+                setCategories([]);
             } finally {
                 setIsLoadingCategories(false);
             }
@@ -101,7 +113,8 @@ export default function AddSubcategoryPage() {
         setMessage(null);
 
         try {
-            const response = await fetch(`${API_URL}/categories`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/categories`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -408,9 +421,9 @@ export default function AddSubcategoryPage() {
                                                 className="w-full py-3 px-4 rounded-xl border border-gray-300 focus:border-violet-500 focus:ring-violet-500 text-base appearance-none bg-white"
                                             >
                                                 <option value="">Select a category</option>
-                                                {categories.map(cat => (
+                                                {Array.isArray(categories) ? categories.map(cat => (
                                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                                ))}
+                                                )) : null}
                                             </select>
                                             <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                                         </>
