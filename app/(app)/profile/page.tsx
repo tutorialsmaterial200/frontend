@@ -142,10 +142,20 @@ export default function ProfilePage() {
                 headers['x-user-id'] = user.id;
             }
 
-            const response = await fetch(`${BACKEND_API_URL}/users/me`, {
+            // Try /users/profile/own first (has richer data like riderInfo, walletBalance, etc.)
+            let response = await fetch(`${BACKEND_API_URL}/users/profile/own`, {
                 method: 'GET',
                 headers,
             });
+
+            // If /users/profile/own fails, try /users/me
+            if (!response.ok) {
+                console.log('⚠️ /users/profile/own failed, trying /users/me');
+                response = await fetch(`${BACKEND_API_URL}/users/me`, {
+                    method: 'GET',
+                    headers,
+                });
+            }
 
             console.log('📡 Profile API response status:', response.status);
 
@@ -170,15 +180,31 @@ export default function ProfilePage() {
                     fullName: userData.fullName || userData.name || '',
                     email: userData.email || '',
                     phone: userData.phone || '',
-                    address: userData.address || '',
-                    city: userData.city || userData.state || '',
-                    province: userData.province || userData.state || '',
-                    avatarUrl: userData.avatarUrl || '',
+                    address: userData.address?.street || userData.address || '',
+                    city: userData.address?.city || userData.city || userData.state || '',
+                    province: userData.address?.state || userData.province || userData.state || '',
+                    avatarUrl: userData.avatarUrl || userData.profilePictureUrl || '',
                     isVerified: isVerifiedValue,
                     isMerchantVerified: userData.isMerchantVerified === true,
                     isRiderVerified: userData.isRiderVerified === true,
                     roles: userData.roles || [],
                 });
+
+                // Populate rider info if available
+                if (userData.riderInfo) {
+                    console.log('🏍️ Populating riderInfo:', userData.riderInfo);
+                    setRiderKYCData({
+                        vehicleType: userData.riderInfo.vehicleType || '',
+                        vehicleModel: userData.riderInfo.vehicleModel || '',
+                        vehicleNumber: userData.riderInfo.vehiclePlateNumber || '',
+                        licenseNumber: userData.riderInfo.drivingLicenseNumber || '',
+                        licenseExpiry: userData.riderInfo.licenseExpiryDate ? new Date(userData.riderInfo.licenseExpiryDate).toISOString().split('T')[0] : '',
+                        licenseImageUrl: userData.riderInfo.drivingLicenseUrl || '',
+                        emergencyContact: userData.riderInfo.emergencyContactName || '',
+                        emergencyPhone: userData.riderInfo.emergencyContactPhone || '',
+                        workingHours: userData.riderInfo.workingHours || '',
+                    });
+                }
 
                 // Update localStorage with fresh data from database
                 const updatedUser = {
@@ -186,8 +212,8 @@ export default function ProfilePage() {
                     name: userData.fullName || userData.name,
                     email: userData.email,
                     phone: userData.phone,
-                    address: userData.address,
-                    city: userData.city || userData.state,
+                    address: userData.address?.street || userData.address,
+                    city: userData.address?.city || userData.city || userData.state,
                     province: userData.province || userData.state,
                     avatarUrl: userData.avatarUrl || '',
                     isVerified: userData.isVerified === true,
@@ -210,10 +236,19 @@ export default function ProfilePage() {
                 
                 // Try /users/info as fallback
                 try {
-                    const fallbackResponse = await fetch(`${BACKEND_API_URL}/users/info`, {
+                    let fallbackResponse = await fetch(`${BACKEND_API_URL}/users/info`, {
                         method: 'GET',
                         headers,
                     });
+
+                    // If /users/info also fails, try /users/profile/own as last resort
+                    if (!fallbackResponse.ok) {
+                        console.log('⚠️ /users/info also failed, trying /users/profile/own as last resort');
+                        fallbackResponse = await fetch(`${BACKEND_API_URL}/users/profile/own`, {
+                            method: 'GET',
+                            headers,
+                        });
+                    }
                     
                     if (fallbackResponse.ok) {
                         const fallbackResult = await fallbackResponse.json();
@@ -1099,6 +1134,58 @@ export default function ProfilePage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {/* Owner/Admin Profile Information - Show only to admin users */}
+                    {profileData.roles.includes('ADMIN') && (
+                        <Card className="border-orange-200 bg-orange-50/50 mb-6">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <span className="text-orange-600">👑</span>
+                                    Owner/Admin Profile
+                                </CardTitle>
+                                <CardDescription>
+                                    Your administrator account information and settings
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                {/* Admin Info Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg border border-orange-100">
+                                    <div>
+                                        <p className="text-xs font-medium text-orange-700 mb-1">User ID</p>
+                                        <p className="text-sm font-mono text-gray-600">{getUser()?.id || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-orange-700 mb-1">Account Type</p>
+                                        <Badge className="bg-orange-600">Administrator</Badge>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-orange-700 mb-1">Account Status</p>
+                                        <Badge variant="outline" className="border-green-500 text-green-700">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Active
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-orange-700 mb-1">Verification Status</p>
+                                        {profileData.isVerified ? (
+                                            <Badge variant="default" className="bg-green-600">
+                                                <CheckCircle className="h-3 w-3 mr-1" />
+                                                Verified
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="destructive">Not Verified</Badge>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-sm">
+                                    <p className="text-orange-800">
+                                        <strong>Admin Privileges:</strong> Full access to user management, platform analytics, and system configuration.
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <div className="space-y-6">
                         {/* Profile Information */}
