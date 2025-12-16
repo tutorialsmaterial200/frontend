@@ -17,16 +17,31 @@ interface Category {
   parentId: string | null;
   depth: number;
   isActive: boolean;
-  children: Category[];
 }
 
 interface ApiResponse {
   categories: Category[];
 }
+
+// Helper function to build category tree from flat list
+const buildCategoryTree = (categories: Category[]) => {
+  const rootCategories = categories.filter(cat => cat.parentId === null);
+  
+  const categoryMap = new Map(categories.map(cat => [cat.id, cat]));
+  
+  // Add children to each category
+  const categoriesWithChildren = rootCategories.map(root => ({
+    ...root,
+    children: categories.filter(cat => cat.parentId === root.id)
+  }));
+  
+  return categoriesWithChildren;
+};
+
 // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 const Categories = () => {
   const { data, loading, error } = useApi<ApiResponse>('/categories');
-  const rootCategories = data?.categories?.filter(cat => cat.parentId === null) || [];
+  const rootCategories = data?.categories ? buildCategoryTree(data.categories) : [];
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -49,7 +64,7 @@ const Categories = () => {
                 {category.name}
               </Badge>
             </HoverCardTrigger>
-            {category.children && category.children.length > 0 && (
+            {category.children && Array.isArray(category.children) && category.children.length > 0 && (
               <HoverCardContent className="w-48 p-2">
                 <div className="space-y-1">
                   {category.children.map((sub) => (
