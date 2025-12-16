@@ -42,7 +42,17 @@ export async function GET() {
         }
 
         const data = await response.json();
-        const backendProducts: BackendProduct[] = data.products || [];
+        // Handle nested data structure from backend
+        let backendProducts: BackendProduct[] = [];
+        if (Array.isArray(data)) {
+            backendProducts = data;
+        } else if (data.data?.products && Array.isArray(data.data.products)) {
+            backendProducts = data.data.products;
+        } else if (data.products && Array.isArray(data.products)) {
+            backendProducts = data.products;
+        } else if (data.data && Array.isArray(data.data)) {
+            backendProducts = data.data;
+        }
         
         // Transform backend data to match frontend interface
         const products: Product[] = backendProducts.map((p) => ({
