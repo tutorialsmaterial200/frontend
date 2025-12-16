@@ -1,8 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
@@ -42,22 +40,33 @@ export default function ProductsPage() {
                 setLoading(true);
                 setError(null);
                 // Fetch from backend API with all products
-                console.log('Fetching products from backend...');
-                const response = await fetch(`${API_URL}/products?limit=1000`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                console.log('Fetching products from:', apiUrl);
+                const response = await fetch(`${apiUrl}/products?limit=1000`);
                 console.log('Response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
                 // Handle paginated response format
-                const productsData = Array.isArray(data) ? data : (data.products || data.data || []);
-                // Filter to show only active AND admin-approved products on public page
-                const activeProducts = productsData.filter((p: Product) => p.isActive !== false && p.isApproved !== false);
-                console.log('Products loaded:', activeProducts.length, 'active & approved items out of', productsData.length, 'total');
+                let productsData: Product[] = [];
+                if (Array.isArray(data)) {
+                    productsData = data;
+                } else if (data.data?.products && Array.isArray(data.data.products)) {
+                    productsData = data.data.products;
+                } else if (data.products && Array.isArray(data.products)) {
+                    productsData = data.products;
+                } else if (data.data && Array.isArray(data.data)) {
+                    productsData = data.data;
+                }
+                // Filter to show only active products on public page
+                const activeProducts = productsData.filter((p: Product) => p.isActive !== false);
+                console.log('Products loaded:', activeProducts.length, 'active items out of', productsData.length, 'total');
                 setProducts(activeProducts);
             } catch (err) {
                 setError('Failed to load products. Please try again later.');
                 console.error('Error fetching products:', err);
+                setProducts([]);
             } finally {
                 setLoading(false);
             }
@@ -87,19 +96,19 @@ export default function ProductsPage() {
     }
 
     // Get unique categories
-    const categories = ['all', ...Array.from(new Set(products.map(p => {
+    const categories = ['all', ...Array.from(new Set(Array.isArray(products) ? products.map(p => {
         if (typeof p.category === 'string') return p.category;
         return p.category?.name || 'Uncategorized';
-    })))];
+    }) : []))];
     
     // Filter products
-    const filteredProducts = products.filter(product => {
+    const filteredProducts = Array.isArray(products) ? products.filter(product => {
         const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.description?.toLowerCase().includes(searchQuery.toLowerCase());
         const categoryName = typeof product.category === 'string' ? product.category : product.category?.name || '';
         const matchesCategory = selectedCategory === 'all' || categoryName === selectedCategory;
         return matchesSearch && matchesCategory;
-    });
+    }) : [];
 
     // Helper to get product image
     const getProductImage = (product: Product): string => {

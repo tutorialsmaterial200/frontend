@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { checkAuth, getUser } from '@/lib/auth';
 import { hasRole } from '@/lib/role-redirect';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,14 +132,27 @@ export default function AddProductPage() {
 
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`${API_URL}/categories`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiUrl}/categories`);
                 const data = await response.json();
                 if (response.ok) {
-                    const categoriesData = Array.isArray(data) ? data : (data.data || data.categories || []);
+                    let categoriesData: Category[] = [];
+                    if (Array.isArray(data)) {
+                        categoriesData = data;
+                    } else if (data.data?.categories && Array.isArray(data.data.categories)) {
+                        categoriesData = data.data.categories;
+                    } else if (data.categories && Array.isArray(data.categories)) {
+                        categoriesData = data.categories;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        categoriesData = data.data;
+                    }
                     setCategories(categoriesData);
+                } else {
+                    setCategories([]);
                 }
             } catch (error) {
                 console.error('Error fetching categories:', error);
+                setCategories([]);
             } finally {
                 setIsLoadingCategories(false);
             }
@@ -148,16 +160,29 @@ export default function AddProductPage() {
 
         const fetchSubcategories = async () => {
             try {
-                const response = await fetch(`${API_URL}/categories`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiUrl}/categories`);
                 const data = await response.json();
                 if (response.ok) {
-                    const allCategories = Array.isArray(data) ? data : (data.data || data.categories || []);
+                    let allCategories: Subcategory[] = [];
+                    if (Array.isArray(data)) {
+                        allCategories = data;
+                    } else if (data.data?.categories && Array.isArray(data.data.categories)) {
+                        allCategories = data.data.categories;
+                    } else if (data.categories && Array.isArray(data.categories)) {
+                        allCategories = data.categories;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        allCategories = data.data;
+                    }
                     // Filter subcategories (categories with parentId)
                     const subcats = allCategories.filter((cat: Subcategory) => cat.parentId || cat.parent);
                     setSubcategories(subcats);
+                } else {
+                    setSubcategories([]);
                 }
             } catch (error) {
                 console.error('Error fetching subcategories:', error);
+                setSubcategories([]);
             } finally {
                 setIsLoadingSubcategories(false);
             }
@@ -165,14 +190,27 @@ export default function AddProductPage() {
 
         const fetchMerchants = async () => {
             try {
-                const response = await fetch(`${API_URL}/merchants`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiUrl}/merchants`);
                 const data = await response.json();
                 if (response.ok) {
-                    const merchantsData = Array.isArray(data) ? data : (data.data || data.merchants || []);
+                    let merchantsData: Merchant[] = [];
+                    if (Array.isArray(data)) {
+                        merchantsData = data;
+                    } else if (data.data?.merchants && Array.isArray(data.data.merchants)) {
+                        merchantsData = data.data.merchants;
+                    } else if (data.merchants && Array.isArray(data.merchants)) {
+                        merchantsData = data.merchants;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        merchantsData = data.data;
+                    }
                     setMerchants(merchantsData);
+                } else {
+                    setMerchants([]);
                 }
             } catch (error) {
                 console.error('Error fetching merchants:', error);
+                setMerchants([]);
             } finally {
                 setIsLoadingMerchants(false);
             }
@@ -255,7 +293,8 @@ export default function AddProductPage() {
                 submitData.append('images', image);
             });
 
-            const response = await fetch(`${API_URL}/products/with-images`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/products/with-images`, {
                 method: 'POST',
                 body: submitData
             });
@@ -764,11 +803,11 @@ export default function AddProductPage() {
                                                         required
                                                     >
                                                         <option value="">Select a merchant</option>
-                                                        {merchants.map((merchant) => (
+                                                        {Array.isArray(merchants) ? merchants.map((merchant) => (
                                                             <option key={merchant.id} value={merchant.id}>
                                                                 {merchant.storeName || merchant.businessName || merchant.user?.name} {merchant.user?.email ? `(${merchant.user.email})` : ''}
                                                             </option>
-                                                        ))}
+                                                        )) : null}
                                                     </select>
                                                 )}
                                             </div>
@@ -791,11 +830,11 @@ export default function AddProductPage() {
                                                         required
                                                     >
                                                         <option value="">Select a category</option>
-                                                        {categories.map((category) => (
+                                                        {Array.isArray(categories) ? categories.map((category) => (
                                                             <option key={category.id} value={category.id}>
                                                                 {category.name}
                                                             </option>
-                                                        ))}
+                                                        )) : null}
                                                     </select>
                                                 )}
                                             </div>
@@ -821,11 +860,11 @@ export default function AddProductPage() {
                                                         className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                     >
                                                         <option value="">Select a subcategory (optional)</option>
-                                                        {filteredSubcategories.map((subcategory) => (
+                                                        {Array.isArray(filteredSubcategories) ? filteredSubcategories.map((subcategory) => (
                                                             <option key={subcategory.id} value={subcategory.id}>
                                                                 {subcategory.name}
                                                             </option>
-                                                        ))}
+                                                        )) : null}
                                                     </select>
                                                 )}
                                             </div>

@@ -148,12 +148,20 @@ export default function AdminProducts() {
             const response = await fetch(`${API_URL}/products?limit=1000`);
             const data = await response.json();
             if (response.ok) {
-                const productsData = Array.isArray(data) ? data : (data.data || data.products || []);
+                let productsData: Product[] = [];
+                if (Array.isArray(data)) {
+                    productsData = data;
+                } else if (data.products && Array.isArray(data.products)) {
+                    productsData = data.products;
+                } else if (data.data && Array.isArray(data.data)) {
+                    productsData = data.data;
+                }
                 // Show all products in admin panel
                 setProducts(productsData);
             }
         } catch (error) {
             console.error('Error fetching products:', error);
+            setProducts([]);
         }
     };
 
@@ -206,7 +214,7 @@ export default function AdminProducts() {
         }
     };
 
-    const filteredProducts = products.filter(product => {
+    const filteredProducts = Array.isArray(products) ? products.filter(product => {
         const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             product.category?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -215,7 +223,7 @@ export default function AdminProducts() {
                             (statusFilter === 'active' && product.isActive === true) ||
                             (statusFilter === 'inactive' && product.isActive !== true);
         return matchesSearch && matchesStatus;
-    });
+    }) : [];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
