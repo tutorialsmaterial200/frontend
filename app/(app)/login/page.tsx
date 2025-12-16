@@ -14,8 +14,25 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("password");
-    const [open, setOpen] = useState(true);
-    const [needsVerification, setNeedsVerification] = useState(false);
+    
+    // Initialize open state based on whether trying to access rider routes
+    const [open, setOpen] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+            const pendingRedirect = localStorage.getItem('redirectAfterLogin') || '';
+            // Show dialog if no token and trying to access rider routes, or if trying to access rider routes
+            return pendingRedirect.includes('/rider') || !token;
+        }
+        return true;
+    });
+    
+    const [needsVerification] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const pendingRedirect = localStorage.getItem('redirectAfterLogin') || '';
+            return pendingRedirect.includes('/rider');
+        }
+        return false;
+    });
 
     // Password login form
     const [email, setEmail] = useState("");
@@ -69,24 +86,18 @@ export default function LoginPage() {
     useEffect(() => {
         // Check if user is already logged in - don't redirect, just close dialog
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        const pendingRedirect = localStorage.getItem('redirectAfterLogin') || '';
-        // If attempting to access rider routes, show verification warning
-        if (pendingRedirect.includes('/rider')) {
-            setNeedsVerification(true);
-        }
-        if (token) {
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        
+        if (token && redirectPath) {
             // User is already logged in, close dialog and go to redirect path or home
-            const redirectPath = localStorage.getItem('redirectAfterLogin');
-            if (redirectPath) {
-                localStorage.removeItem('redirectAfterLogin');
-                if (redirectPath.includes('/rider')) {
-                    router.replace('/profile');
-                } else {
-                    router.replace(redirectPath);
-                }
+            localStorage.removeItem('redirectAfterLogin');
+            if (redirectPath.includes('/rider')) {
+                router.replace('/profile');
             } else {
-                router.replace('/');
+                router.replace(redirectPath);
             }
+        } else if (token && !redirectPath) {
+            router.replace('/');
         }
     }, [router]);
 
