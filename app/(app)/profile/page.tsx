@@ -1199,6 +1199,20 @@ export default function ProfilePage() {
                                     <p className="text-lg font-semibold">{profileData.email || 'Not set'}</p>
                                 </div>
                             </div>
+                            <div className="mt-4 pt-4 border-t border-blue-200 flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">Status:</p>
+                                {profileData.isVerified ? (
+                                    <Badge className="bg-green-600 hover:bg-green-700">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        Verified
+                                    </Badge>
+                                ) : (
+                                    <Badge variant="destructive">
+                                        <XCircle className="h-3 w-3 mr-1" />
+                                        Not Verified
+                                    </Badge>
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
 
