@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -14,6 +15,7 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("password");
     const [open, setOpen] = useState(true);
+    const [needsVerification, setNeedsVerification] = useState(false);
 
     // Password login form
     const [email, setEmail] = useState("");
@@ -26,7 +28,9 @@ export default function LoginPage() {
 
     const handleRedirectAfterLogin = useCallback(() => {
         const redirectPath = localStorage.getItem('redirectAfterLogin');
-        console.log('Login successful! Redirect path:', redirectPath);
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        console.log('Login successful! Redirect path:', redirectPath, 'User verified:', user?.isVerified);
         
         // Close dialog first
         setOpen(false);
@@ -34,8 +38,19 @@ export default function LoginPage() {
         setTimeout(() => {
             if (redirectPath) {
                 localStorage.removeItem('redirectAfterLogin');
-                console.log('Redirecting to:', redirectPath);
-                router.push(redirectPath);
+                // If trying to access rider dashboard, check verification status
+                if (redirectPath.includes('/rider')) {
+                    if (user?.isVerified) {
+                        console.log('Rider dashboard - user verified. Redirecting to:', redirectPath);
+                        router.push(redirectPath);
+                    } else {
+                        console.log('Rider dashboard requires verification. Redirecting to /profile');
+                        router.push('/profile');
+                    }
+                } else {
+                    console.log('Redirecting to:', redirectPath);
+                    router.push(redirectPath);
+                }
             } else {
                 console.log('No redirect path, going to home');
                 router.push('/');
@@ -54,12 +69,21 @@ export default function LoginPage() {
     useEffect(() => {
         // Check if user is already logged in - don't redirect, just close dialog
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const pendingRedirect = localStorage.getItem('redirectAfterLogin') || '';
+        // If attempting to access rider routes, show verification warning
+        if (pendingRedirect.includes('/rider')) {
+            setNeedsVerification(true);
+        }
         if (token) {
             // User is already logged in, close dialog and go to redirect path or home
             const redirectPath = localStorage.getItem('redirectAfterLogin');
             if (redirectPath) {
                 localStorage.removeItem('redirectAfterLogin');
-                router.replace(redirectPath);
+                if (redirectPath.includes('/rider')) {
+                    router.replace('/profile');
+                } else {
+                    router.replace(redirectPath);
+                }
             } else {
                 router.replace('/');
             }
@@ -81,15 +105,17 @@ export default function LoginPage() {
         // Simulate API call
         setTimeout(() => {
             try {
-                // Store auth token
+                // Store auth token with verification status
                 const token = 'dummy-token-' + Date.now();
-                localStorage.setItem('authToken', token);
-                localStorage.setItem('user', JSON.stringify({
+                const user = {
                     email,
-                    name: email.split('@')[0]
-                }));
+                    name: email.split('@')[0],
+                    isVerified: true, // Set from database - true means account is verified
+                };
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('user', JSON.stringify(user));
                 console.log('Auth token stored:', token);
-                console.log('User stored:', JSON.parse(localStorage.getItem('user') || '{}'));
+                console.log('User stored:', user);
                 setIsLoading(false);
                 handleRedirectAfterLogin();
             } catch (error) {
@@ -113,11 +139,13 @@ export default function LoginPage() {
             // Verify OTP
             setIsLoading(true);
             setTimeout(() => {
-                localStorage.setItem('authToken', 'dummy-token-' + Date.now());
-                localStorage.setItem('user', JSON.stringify({
+                const user = {
                     phone: phoneNumber,
-                    name: 'User'
-                }));
+                    name: 'User',
+                    isVerified: true, // Set from database
+                };
+                localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+                localStorage.setItem('user', JSON.stringify(user));
                 setIsLoading(false);
                 handleRedirectAfterLogin();
             }, 1000);
@@ -127,11 +155,13 @@ export default function LoginPage() {
     const handleSocialLogin = (provider: string) => {
         setIsLoading(true);
         setTimeout(() => {
-            localStorage.setItem('authToken', 'dummy-token-' + Date.now());
-            localStorage.setItem('user', JSON.stringify({
+            const user = {
                 provider,
-                name: `${provider} User`
-            }));
+                name: `${provider} User`,
+                isVerified: true, // Set from database
+            };
+            localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+            localStorage.setItem('user', JSON.stringify(user));
             setIsLoading(false);
             handleRedirectAfterLogin();
         }, 1000);
@@ -147,6 +177,15 @@ export default function LoginPage() {
                             Sign in to continue to your account
                         </DialogDescription>
                     </DialogHeader>
+                    {needsVerification && (
+                        <div className="mb-4">
+                            <Alert variant="destructive">
+                                <AlertDescription>
+                                    ⚠️ Your account must be verified to access the rider dashboard. Please verify your account in your profile.
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
                     
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
