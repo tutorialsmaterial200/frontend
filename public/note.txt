@@ -1,0 +1,188 @@
+1. User ID: cmj2edk8s0000gx3xupiqdzwx
+   Email: admin@superapp.com
+   Phone: +9779800000000
+   Full Name: System Administrator
+   Password Hash: $2b$10$gMf.aK75/gkvzMXgMjZZDOy4ewAriaMB2B8PlqWcf3uRDuLddXfs.
+   Roles: ADMIN
+   Verified: true
+   Created: 2025-12-12T04:59:14.236Z
+----------------------------------------
+
+2. User ID: cmj1imbfv0000pd0odthz7naq
+   Email: testtoken@example.com
+   Phone: N/A
+   Full Name: Test Token User
+   Password Hash: $2b$10$754NBhLBiCQ362iKk6CqXu3Y8ISaum6Gk7JdR8FOm6FEEs3bBgi6G
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T14:10:15.019Z
+----------------------------------------
+
+3. User ID: cmj1ayhat0009v15scmzr33t6
+   Email: bob@example.com
+   Phone: +1987654321
+   Full Name: Bob Johnson
+   Password Hash: $2b$10$QEF7aumAJw//DFTIxuH6EOa9cpPQUks4LEfI5uZT.L.kcpk71m6fG
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T10:35:45.558Z
+----------------------------------------
+
+4. User ID: cmj1aygs60006v15szi4rw30y
+   Email: alice@example.com
+   Phone: N/A
+   Full Name: Alice Smith
+   Password Hash: $2b$10$wXmwRd/YGMr1t5dn0.31Iuwt0Irb7NoORfqsOUPptxfM/.7mvB1wC
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T10:35:44.886Z
+----------------------------------------
+
+5. User ID: cmj1aw0vd0003v15slwzcuess
+   Email: johndoe@example.com
+   Phone: N/A
+   Full Name: John Doe
+   Password Hash: $2b$10$cP3nXN6ZNCuD0Vsd9ufeBe0Xz5aAfEPhYiSUjyq1Hnf3fpg/dFYA.
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T10:33:50.954Z
+----------------------------------------
+
+6. User ID: cmj1aqnft0000v15sijlir6r7
+   Email: ram@gmail.com
+   Phone: N/A
+   Full Name: N/A
+   Password Hash: $2b$10$ovHsr3SRzndMViRXrFgQKOHSzhC5F8bG7R0wyIC7kw2jsNV/zFlxK
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T10:29:40.266Z
+----------------------------------------
+
+7. User ID: cmj19xnik0006tzp0fyu2l38n
+   Email: aasish1@gmail.com
+   Phone: N/A
+   Full Name: N/A
+   Password Hash: $2b$10$s4Tk97KFRd9jigpjiKxr5.y/GiaXf9KJLEedq2dinLhcmv0H4Eod6
+   Roles: SUPPORT
+   Verified: true
+   Created: 2025-12-11T10:07:07.341Z
+----------------------------------------
+
+8. User ID: cmj19vf5g0003tzp0nl136ew3
+   Email: aasish@gmail.com
+   Phone: N/A
+   Full Name: limbu     aasish
+   Password Hash: $2b$10$WBi91dnpdd8NL/0w7Uf6fuvLhgkriggCSI7CRr.IzbXST0PEdQykC
+   Roles: CUSTOMER
+   Verified: true
+   Created: 2025-12-11T10:05:23.188Z
+----------------------------------------
+
+9. User ID: cmj19o9wd0000tzp09p6sst3h
+   Email: newuser@example.com
+   Phone: +1234567891
+   Full Name: New Test User
+   Password Hash: $2b$10$XK47kb26ctHGfOImSAJQdudPALqw2NH38CnA5OMzQT2ffNjAEbsV.
+   Roles: CUSTOMER
+   Verified: false
+   Created: 2025-12-11T09:59:49.790Z
+----------------------------------------
+
+10. User ID: cmisz5p10000b145yhq74wkwt
+   Email: rider.david@test.com
+   Phone: +14155551202
+   Full Name: David Kim
+   Password Hash: $2b$10$P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9
+   Roles: RIDER
+   Verified: true
+   Created: 2025-12-05T14:43:17.364Z
+----------------------------------------
+
+11. User ID: cmisz5opn000a145ye8jilhkr
+   Email: driver.carlos@test.com
+   Phone: +14155551102
+   Full Name: Carlos Rodriguez
+   Password Hash: $2b$10$O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8
+   Roles: RIDER
+   Verified: true
+   Created: 2025-12-05T14:43:16.956Z
+----------------------------------------
+
+12. User ID: cmisz5oc20009145y14q0zvqx
+   Email: maria.garcia@test.com
+   Phone: +14155551004
+   Full Name: Maria Garcia
+   Password Hash: $2b$10$N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7
+   Roles: CUSTOMER
+   Verified: true
+   Created: 2025-12-05T14:43:16.466Z
+----------------------------------------
+
+13. User ID: cmisz5nyf0007145yume2c8s6
+   Email: alex.johnson@test.com
+   Phone: +14155551003
+   Full Name: Alex Johnson
+   Password Hash: $2b$10$M0N1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6
+   Roles: CUSTOMER
+   Verified: true
+   Created: 2025-12-05T14:43:15.975Z
+----------------------------------------
+
+14. User ID: cmisz5nn50006145yq2k3e88c
+   Email: fashion.merchant@test.com
+   Phone: +14155551302
+   Full Name: Fashion Store Owner
+   Password Hash: $2b$10$abcdefghijklmnopqrstuvwxyz123456
+   Roles: MERCHANT
+   Verified: true
+   Created: 2025-12-05T14:43:15.569Z
+----------------------------------------
+
+15. User ID: cmisz5nbo0005145y1eanou1r
+   Email: merchant@test.com
+   Phone: +14155551301
+   Full Name: Tech Store Owner
+   Password Hash: $2b$10$abcdefghijklmnopqrstuvwxyz123456
+   Roles: MERCHANT
+   Verified: true
+   Created: 2025-12-05T14:43:15.156Z
+----------------------------------------
+
+16. User ID: cmisz5n090004145yeq7bkg3v
+   Email: rider.sarah@test.com
+   Phone: +14155551201
+   Full Name: Sarah Johnson
+   Password Hash: password123
+   Roles: RIDER
+   Verified: true
+   Created: 2025-12-05T14:43:14.746Z
+----------------------------------------
+
+17. User ID: cmisz5mml0003145yscy15fh1
+   Email: driver.mike@test.com
+   Phone: +14155551101
+   Full Name: Mike Wilson
+   Password Hash: $2b$10$abcdefghijklmnopqrstuvwxyz123456
+   Roles: RIDER
+   Verified: true
+   Created: 2025-12-05T14:43:14.254Z
+----------------------------------------
+
+18. User ID: cmisz5m930002145yri03sxie
+   Email: jane.smith@test.com
+   Phone: +14155551002
+   Full Name: Jane Smith
+   Password Hash: $2b$10$L9A8B7C6D5E4F3G2H1I0J9K8L7M6N5O4P3Q2R1S0T9U8V7W6X5Y4Z3
+   Roles: CUSTOMER
+   Verified: true
+   Created: 2025-12-05T14:43:13.767Z
+----------------------------------------
+
+19. User ID: cmisz5lqr0000145yrre5k4zd
+   Email: john.doe@test.com
+   Phone: +14155551001
+   Full Name: John Doe FINAL TEST
+   Password Hash: $2b$10$K8Z9X7Y6W5V4U3T2S1R0Q9P8O7N6M5L4K3J2I1H0G9F8E7D6C5B4A3
+   Roles: CUSTOMER
+   Verified: true
+   Created: 2025-12-05T14:43:13.107Z
