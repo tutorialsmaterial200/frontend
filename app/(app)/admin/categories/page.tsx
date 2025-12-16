@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -95,18 +94,30 @@ export default function CategoriesPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_URL}/categories`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/categories`);
             const data = await response.json();
             
             if (response.ok) {
-                const categoriesData = Array.isArray(data) ? data : (data.data || data.categories || []);
+                let categoriesData: Category[] = [];
+                if (Array.isArray(data)) {
+                    categoriesData = data;
+                } else if (data.data?.categories && Array.isArray(data.data.categories)) {
+                    categoriesData = data.data.categories;
+                } else if (data.categories && Array.isArray(data.categories)) {
+                    categoriesData = data.categories;
+                } else if (data.data && Array.isArray(data.data)) {
+                    categoriesData = data.data;
+                }
                 setCategories(categoriesData);
             } else {
                 setError(data.message || 'Failed to fetch categories');
+                setCategories([]);
             }
         } catch (err) {
             setError('Error connecting to server. Please try again.');
             console.error('Error fetching categories:', err);
+            setCategories([]);
         } finally {
             setIsLoading(false);
         }
@@ -115,15 +126,28 @@ export default function CategoriesPage() {
     const fetchSubcategories = async () => {
         setIsLoadingSubcategories(true);
         try {
-            const response = await fetch(`${API_URL}/subcategories`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/subcategories`);
             const data = await response.json();
             
             if (response.ok) {
-                const subcategoriesData = Array.isArray(data) ? data : (data.data || data.subcategories || []);
+                let subcategoriesData: Subcategory[] = [];
+                if (Array.isArray(data)) {
+                    subcategoriesData = data;
+                } else if (data.data?.subcategories && Array.isArray(data.data.subcategories)) {
+                    subcategoriesData = data.data.subcategories;
+                } else if (data.subcategories && Array.isArray(data.subcategories)) {
+                    subcategoriesData = data.subcategories;
+                } else if (data.data && Array.isArray(data.data)) {
+                    subcategoriesData = data.data;
+                }
                 setSubcategories(subcategoriesData);
+            } else {
+                setSubcategories([]);
             }
         } catch (err) {
             console.error('Error fetching subcategories:', err);
+            setSubcategories([]);
         } finally {
             setIsLoadingSubcategories(false);
         }
@@ -138,7 +162,8 @@ export default function CategoriesPage() {
         if (!confirm('Are you sure you want to delete this category?')) return;
         
         try {
-            const response = await fetch(`${API_URL}/categories/${categoryId}`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/categories/${categoryId}`, {
                 method: 'DELETE',
             });
             
@@ -158,7 +183,8 @@ export default function CategoriesPage() {
         if (!confirm('Are you sure you want to delete this subcategory?')) return;
         
         try {
-            const response = await fetch(`${API_URL}/subcategories/${subcategoryId}`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/subcategories/${subcategoryId}`, {
                 method: 'DELETE',
             });
             
@@ -174,20 +200,20 @@ export default function CategoriesPage() {
         }
     };
 
-    const filteredCategories = categories.filter(category => {
+    const filteredCategories = Array.isArray(categories) ? categories.filter(category => {
         const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             (category.description || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || category.status === statusFilter;
         return matchesSearch && matchesStatus;
-    });
+    }) : [];
 
-    const filteredSubcategories = subcategories.filter(subcategory => {
+    const filteredSubcategories = Array.isArray(subcategories) ? subcategories.filter(subcategory => {
         const matchesSearch = subcategory.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             (subcategory.description || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = statusFilter === 'all' || subcategory.status === statusFilter;
         const matchesCategory = categoryFilter === 'all' || subcategory.categoryId === categoryFilter || subcategory.category?.id === categoryFilter;
         return matchesSearch && matchesStatus && matchesCategory;
-    });
+    }) : [];
 
     const getSubcategoryCount = (category: Category) => {
         return category.subcategoryCount || category._count?.subcategories || 0;

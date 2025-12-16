@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,12 +144,15 @@ export default function AdminProducts() {
 
     const fetchProducts = async () => {
         try {
-            const response = await fetch(`${API_URL}/products?limit=1000`);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/products?limit=1000`);
             const data = await response.json();
             if (response.ok) {
                 let productsData: Product[] = [];
                 if (Array.isArray(data)) {
                     productsData = data;
+                } else if (data.data?.products && Array.isArray(data.data.products)) {
+                    productsData = data.data.products;
                 } else if (data.products && Array.isArray(data.products)) {
                     productsData = data.products;
                 } else if (data.data && Array.isArray(data.data)) {
@@ -170,7 +172,8 @@ export default function AdminProducts() {
         
         setIsDeleting(productId);
         try {
-            const response = await fetch(`${API_URL}/products/${productId}`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/products/${productId}`, {
                 method: 'DELETE',
             });
             
@@ -193,7 +196,8 @@ export default function AdminProducts() {
     const handleApprove = async (productId: string) => {
         setIsApproving(productId);
         try {
-            const response = await fetch(`${API_URL}/products/${productId}`, {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const response = await fetch(`${apiUrl}/products/${productId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
