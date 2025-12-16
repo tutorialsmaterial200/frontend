@@ -206,8 +206,61 @@ export default function ProfilePage() {
                 console.log('⚠️ API response not OK, status:', response.status);
                 const errorData = await response.json().catch(() => ({}));
                 console.log('❌ Error response:', errorData);
-                console.log('⚠️ Falling back to localStorage');
-                // Fallback to localStorage if API fails
+                console.log('⚠️ Trying /users/info endpoint as fallback');
+                
+                // Try /users/info as fallback
+                try {
+                    const fallbackResponse = await fetch(`${BACKEND_API_URL}/users/info`, {
+                        method: 'GET',
+                        headers,
+                    });
+                    
+                    if (fallbackResponse.ok) {
+                        const fallbackResult = await fallbackResponse.json();
+                        console.log('✅ Fallback /users/info successful:', fallbackResult);
+                        const userData = fallbackResult.data || fallbackResult;
+                        
+                        const isVerifiedValue = userData.isVerified === true;
+                        console.log('💾 Setting isVerified to (from /users/info):', isVerifiedValue);
+                        setProfileData({
+                            fullName: userData.fullName || userData.name || '',
+                            email: userData.email || '',
+                            phone: userData.phone || '',
+                            address: userData.address?.street || userData.address || '',
+                            city: userData.address?.city || userData.city || userData.state || '',
+                            province: userData.address?.state || userData.province || userData.state || '',
+                            avatarUrl: userData.avatarUrl || userData.profilePictureUrl || '',
+                            isVerified: isVerifiedValue,
+                            isMerchantVerified: userData.isMerchantVerified === true,
+                            isRiderVerified: userData.isRiderVerified === true,
+                            roles: userData.roles || [],
+                        });
+                        
+                        // Update localStorage with fresh data
+                        const updatedUser = {
+                            id: userData.id || userData._id,
+                            name: userData.fullName || userData.name,
+                            email: userData.email,
+                            phone: userData.phone,
+                            address: userData.address?.street || userData.address,
+                            city: userData.address?.city || userData.city || userData.state,
+                            province: userData.address?.state || userData.province || userData.state,
+                            avatarUrl: userData.avatarUrl || userData.profilePictureUrl || '',
+                            isVerified: isVerifiedValue,
+                            isMerchantVerified: userData.isMerchantVerified === true,
+                            isRiderVerified: userData.isRiderVerified === true,
+                            roles: userData.roles || [],
+                        };
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        window.dispatchEvent(new Event('auth-change'));
+                        return;
+                    }
+                } catch (fallbackError) {
+                    console.error('❌ Fallback /users/info also failed:', fallbackError);
+                }
+                
+                console.log('⚠️ Both endpoints failed, falling back to localStorage');
+                // Fallback to localStorage if both API endpoints fail
                 if (user) {
                     setProfileData({
                         fullName: user.name || '',
@@ -982,6 +1035,11 @@ export default function ProfilePage() {
                     </Link>
 
                     <h1 className="text-3xl font-bold mb-8">My Profile</h1>
+
+                    {/* Debug: Show actual isVerified state value */}
+                    <div className="mb-4 p-2 bg-gray-100 rounded text-xs font-mono text-gray-600">
+                        Debug: isVerified={String(profileData.isVerified)} | Type: {typeof profileData.isVerified}
+                    </div>
 
                     {/* Verification Status Card */}
                     {profileData.isVerified ? (
