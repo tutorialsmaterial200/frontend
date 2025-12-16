@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, Mail, Phone, MapPin, Lock, Camera, ArrowLeft, CheckCircle, XCircle, Building2, CreditCard, FileText, Bike } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Lock, Camera, ArrowLeft, CheckCircle, XCircle, Building2, CreditCard, FileText, Bike, Edit2, Save } from 'lucide-react';
 import { Navbar } from '../(home)/navbar';
 import { checkAuth, getUser } from '@/lib/auth';
 import { LoginDialog } from '@/components/auth/LoginDialog';
@@ -24,6 +24,8 @@ export default function ProfilePage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isRequestingMerchant, setIsRequestingMerchant] = useState(false);
     const [isRequestingRider, setIsRequestingRider] = useState(false);
@@ -35,6 +37,7 @@ export default function ProfilePage() {
     const [showRiderKYCDialog, setShowRiderKYCDialog] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [originalProfileData, setOriginalProfileData] = useState<typeof profileData | null>(null);
 
     const [profileData, setProfileData] = useState({
         fullName: '',
@@ -1116,140 +1119,12 @@ export default function ProfilePage() {
 
                     <h1 className="text-3xl font-bold mb-8">My Profile</h1>
 
-                    {/* Debug: Show actual isVerified state value */}
-                    <div className="mb-4 p-2 bg-gray-100 rounded text-xs font-mono text-gray-600">
-                        Debug: isVerified={String(profileData.isVerified)} | Type: {typeof profileData.isVerified}
-                    </div>
+                
 
-                    {/* Verification Status Card */}
-                    {profileData.isVerified ? (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-                            <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                                <h3 className="font-semibold text-green-900">Account Verified</h3>
-                                <p className="text-sm text-green-800 mt-1">Your account has been verified. You can now access all features including rider and merchant services.</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-                            <XCircle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-yellow-900">Account Not Verified</h3>
-                                <p className="text-sm text-yellow-800 mt-1">Verify your account to unlock rider and merchant features.</p>
-                                <Button 
-                                    onClick={handleVerifyAccount}
-                                    disabled={isVerifying}
-                                    size="sm"
-                                    className="mt-3 bg-yellow-600 hover:bg-yellow-700"
-                                >
-                                    {isVerifying ? 'Verifying...' : 'Verify Account Now'}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                 
 
-                    {/* User Roles Card */}
-                    {profileData.roles && profileData.roles.length > 0 && (
-                        <Card className="bg-indigo-50 border-indigo-200 mb-6">
-                            <CardContent className="pt-6">
-                                <p className="text-xs font-medium text-indigo-700 mb-3">Your Roles</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {profileData.roles.map((role: string) => {
-                                        let roleClass = 'bg-gray-100 text-gray-800 border-gray-300';
-                                        let roleIcon = '👤';
-                                        
-                                        if (role === 'ADMIN') {
-                                            roleClass = 'bg-red-100 text-red-800 border-red-300';
-                                            roleIcon = '👑';
-                                        } else if (role === 'MERCHANT') {
-                                            roleClass = 'bg-purple-100 text-purple-800 border-purple-300';
-                                            roleIcon = '🏪';
-                                        } else if (role === 'RIDER') {
-                                            roleClass = 'bg-blue-100 text-blue-800 border-blue-300';
-                                            roleIcon = '🏍️';
-                                        }
-                                        
-                                        return (
-                                            <div
-                                                key={role}
-                                                className={`px-3 py-2 rounded-lg border ${roleClass} transition-colors cursor-default`}
-                                            >
-                                                <span className="text-sm font-medium">{roleIcon} {role}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                
 
-                    {successMessage && (
-                        <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6">
-                            {successMessage}
-                        </div>
-                    )}
-
-                    {errorMessage && (
-                        <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
-                            {errorMessage}
-                        </div>
-                    )}
-
-                    {/* Debug Info - Show current user data state */}
-                    {isLoggedIn && (
-                        <Card className="bg-gray-50 border-gray-200 mb-6">
-                            <CardContent className="pt-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Auth Status</p>
-                                        <p className="font-mono text-green-700">✓ Logged In</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Profile Data Loaded</p>
-                                        <p className="font-mono">{profileData.fullName ? '✓ Yes' : '✗ No'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Name</p>
-                                        <p className="font-mono text-gray-600">{profileData.fullName || '(empty)'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-muted-foreground">Email</p>
-                                        <p className="font-mono text-gray-600">{profileData.email || '(empty)'}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Quick Info Card - Show fetched data from DB */}
-                    <Card className="bg-blue-50 border-blue-200 mb-6">
-                        <CardContent className="pt-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Full Name</p>
-                                    <p className="text-lg font-semibold">{profileData.fullName || 'Not set'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Email</p>
-                                    <p className="text-lg font-semibold">{profileData.email || 'Not set'}</p>
-                                </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-blue-200 flex items-center gap-2">
-                                <p className="text-xs text-muted-foreground">Status:</p>
-                                {profileData.isVerified ? (
-                                    <Badge className="bg-green-600 hover:bg-green-700">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Verified
-                                    </Badge>
-                                ) : (
-                                    <Badge variant="destructive">
-                                        <XCircle className="h-3 w-3 mr-1" />
-                                        Not Verified
-                                    </Badge>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
 
                     {/* Owner/Admin Profile Information - Show only to admin users */}
                     {profileData.roles.includes('ADMIN') && (
@@ -1305,101 +1180,90 @@ export default function ProfilePage() {
 
                     <div className="space-y-6">
                         {/* Profile Information */}
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b rounded-t-lg flex flex-row items-center justify-between">
                                 <div>
-                                    <CardTitle>Profile Information</CardTitle>
-                                    <CardDescription>Update your personal details and contact information</CardDescription>
+                                    <CardTitle className="text-2xl">Profile Information</CardTitle>
+                                    <CardDescription className="mt-1">Update your personal details and contact information</CardDescription>
                                 </div>
                                 <Button 
                                     type="button"
-                                    variant="outline" 
+                                    variant="ghost" 
                                     size="sm"
                                     onClick={() => fetchUserProfile()}
                                     disabled={isLoading}
                                     title="Refresh profile data from database"
+                                    className="hover:bg-slate-200"
                                 >
                                     🔄 Refresh
                                 </Button>
                             </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                            <CardContent className="pt-8">
+                                <form onSubmit={handleProfileSubmit} className="space-y-8">
                                     {/* Avatar Section */}
-                                    <div className="flex items-center gap-6">
-                                        <Avatar className="w-24 h-24">
-                                            <AvatarImage src={profileData.avatarUrl} />
-                                            <AvatarFallback className="text-2xl">
-                                                {getInitials(profileData.fullName || 'User')}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="text-xl font-semibold">{profileData.fullName}</h3>
-                                                {profileData.isVerified ? (
-                                                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                                        Verified
-                                                    </Badge>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
+                                    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-6 border border-indigo-100">
+                                        <div className="flex items-center gap-6">
+                                            <Avatar className="w-28 h-28 border-4 border-white shadow-lg">
+                                                <AvatarImage src={profileData.avatarUrl} />
+                                                <AvatarFallback className="text-3xl bg-gradient-to-br from-indigo-400 to-blue-400 text-white">
+                                                    {getInitials(profileData.fullName || 'User')}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <h3 className="text-2xl font-bold">{profileData.fullName || 'User'}</h3>
+                                                    {profileData.isVerified ? (
+                                                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                                            Verified
+                                                        </Badge>
+                                                    ) : (
                                                         <Badge variant="destructive">
                                                             <XCircle className="h-3 w-3 mr-1" />
                                                             Not Verified
                                                         </Badge>
-                                                        <Button
-                                                            type="button"
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={handleVerifyAccount}
-                                                            disabled={isVerifying}
-                                                            className="h-6 text-xs"
-                                                        >
-                                                            {isVerifying ? 'Verifying...' : 'Verify Now'}
-                                                        </Button>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-slate-600 mb-3">{profileData.email}</p>
+                                                {profileData.roles && profileData.roles.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 mb-3">
+                                                        {profileData.roles.map((role: string) => (
+                                                            <Badge key={role} variant="outline" className="text-xs font-medium">
+                                                                {role}
+                                                            </Badge>
+                                                        ))}
                                                     </div>
                                                 )}
-                                            </div>
-                                            <p className="text-sm text-muted-foreground mb-2">{profileData.email}</p>
-                                            {profileData.roles && profileData.roles.length > 0 && (
-                                                <div className="flex gap-1">
-                                                    {profileData.roles.map((role: string) => (
-                                                        <Badge key={role} variant="outline" className="text-xs">
-                                                            {role}
-                                                        </Badge>
-                                                    ))}
+                                                <div className="flex items-center gap-3 pt-2">
+                                                    <input
+                                                        type="file"
+                                                        id="avatar-upload"
+                                                        accept="image/*"
+                                                        onChange={handleImageUpload}
+                                                        className="hidden"
+                                                    />
+                                                    <Button 
+                                                        type="button" 
+                                                        size="sm"
+                                                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                                                        disabled={isUploadingImage}
+                                                        className="bg-indigo-600 hover:bg-indigo-700"
+                                                    >
+                                                        <Camera className="w-4 h-4 mr-2" />
+                                                        {isUploadingImage ? 'Uploading...' : 'Change Photo'}
+                                                    </Button>
+                                                    <p className="text-xs text-slate-500">JPG, PNG or GIF. Max 2MB</p>
                                                 </div>
-                                            )}
-                                            <div className="mt-3">
-                                                <input
-                                                    type="file"
-                                                    id="avatar-upload"
-                                                    accept="image/*"
-                                                    onChange={handleImageUpload}
-                                                    className="hidden"
-                                                />
-                                                <Button 
-                                                    type="button" 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => document.getElementById('avatar-upload')?.click()}
-                                                    disabled={isUploadingImage}
-                                                >
-                                                    <Camera className="w-4 h-4 mr-2" />
-                                                    {isUploadingImage ? 'Uploading...' : 'Change Photo'}
-                                                </Button>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mt-2">
-                                                JPG, PNG or GIF. Max size 2MB
-                                            </p>
                                         </div>
                                     </div>
 
-                                    <Separator />
+                                    <Separator className="my-2" />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="fullName">
-                                                <User className="w-4 h-4 inline mr-2" />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="fullName" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <User className="w-4 h-4 text-indigo-600" />
                                                 Full Name
                                             </Label>
                                             <Input
@@ -1409,12 +1273,14 @@ export default function ProfilePage() {
                                                 onChange={handleProfileChange}
                                                 placeholder="Enter your full name"
                                                 required
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
                                             />
                                         </div>
 
-                                        <div>
-                                            <Label htmlFor="email">
-                                                <Mail className="w-4 h-4 inline mr-2" />
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="email" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <Mail className="w-4 h-4 text-indigo-600" />
                                                 Email Address
                                             </Label>
                                             <Input
@@ -1425,12 +1291,14 @@ export default function ProfilePage() {
                                                 onChange={handleProfileChange}
                                                 placeholder="your@email.com"
                                                 required
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
                                             />
                                         </div>
 
-                                        <div>
-                                            <Label htmlFor="phone">
-                                                <Phone className="w-4 h-4 inline mr-2" />
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="phone" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <Phone className="w-4 h-4 text-indigo-600" />
                                                 Phone Number
                                             </Label>
                                             <Input
@@ -1440,12 +1308,14 @@ export default function ProfilePage() {
                                                 value={profileData.phone}
                                                 onChange={handleProfileChange}
                                                 placeholder="+977 98XXXXXXXX"
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
                                             />
                                         </div>
 
-                                        <div>
-                                            <Label htmlFor="city">
-                                                <MapPin className="w-4 h-4 inline mr-2" />
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="city" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <MapPin className="w-4 h-4 text-indigo-600" />
                                                 City
                                             </Label>
                                             <Input
@@ -1454,50 +1324,100 @@ export default function ProfilePage() {
                                                 value={profileData.city}
                                                 onChange={handleProfileChange}
                                                 placeholder="Kathmandu"
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="address" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <MapPin className="w-4 h-4 text-indigo-600" />
+                                                Address
+                                            </Label>
+                                            <Input
+                                                id="address"
+                                                name="address"
+                                                value={profileData.address}
+                                                onChange={handleProfileChange}
+                                                placeholder="Street address"
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2 group">
+                                            <Label htmlFor="province" className="font-semibold text-slate-700 flex items-center gap-2">
+                                                <MapPin className="w-4 h-4 text-indigo-600" />
+                                                Province
+                                            </Label>
+                                            <Input
+                                                id="province"
+                                                name="province"
+                                                value={profileData.province}
+                                                onChange={handleProfileChange}
+                                                placeholder="Bagmati Province"
+                                                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-indigo-200 transition-all duration-200"
+                                                disabled={!isEditing}
                                             />
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <Label htmlFor="address">Address</Label>
-                                        <Input
-                                            id="address"
-                                            name="address"
-                                            value={profileData.address}
-                                            onChange={handleProfileChange}
-                                            placeholder="Street address"
-                                        />
+                                    {/* Form Actions */}
+                                    <div className="flex gap-3 pt-4">
+                                        {!isEditing ? (
+                                            <Button 
+                                                type="button"
+                                                onClick={() => setIsEditing(true)}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6"
+                                            >
+                                                <Edit2 className="w-4 h-4 mr-2" />
+                                                Edit Profile
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <Button 
+                                                    type="submit"
+                                                    disabled={isSavingProfile}
+                                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6"
+                                                >
+                                                    <Save className="w-4 h-4 mr-2" />
+                                                    {isSavingProfile ? 'Saving...' : 'Save Changes'}
+                                                </Button>
+                                                <Button 
+                                                    type="button"
+                                                    variant="ghost"
+                                                    onClick={() => {
+                                                        setIsEditing(false)
+                                                        if (originalProfileData) {
+                                                            setProfileData(originalProfileData)
+                                                        }
+                                                    }}
+                                                    className="hover:bg-slate-200"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </>
+                                        )}
                                     </div>
-
-                                    <div>
-                                        <Label htmlFor="province">Province</Label>
-                                        <Input
-                                            id="province"
-                                            name="province"
-                                            value={profileData.province}
-                                            onChange={handleProfileChange}
-                                            placeholder="Bagmati Province"
-                                        />
-                                    </div>
-
-                                    <Button type="submit" disabled={isSaving} className="w-full md:w-auto">
-                                        {isSaving ? 'Saving...' : 'Save Changes'}
-                                    </Button>
                                 </form>
                             </CardContent>
                         </Card>
 
                         {/* Change Password */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Change Password</CardTitle>
-                                <CardDescription>Update your password to keep your account secure</CardDescription>
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-shadow">
+                            <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 border-b rounded-t-lg">
+                                <CardTitle className="text-2xl flex items-center gap-2">
+                                    <Lock className="w-5 h-5 text-rose-600" />
+                                    Change Password
+                                </CardTitle>
+                                <CardDescription className="text-slate-600">
+                                    Update your password to keep your account secure
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="currentPassword">
-                                            <Lock className="w-4 h-4 inline mr-2" />
+                            <CardContent className="pt-8 space-y-8">
+                                <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                                    <div className="space-y-2 group">
+                                        <Label htmlFor="currentPassword" className="font-semibold text-slate-700">
                                             Current Password
                                         </Label>
                                         <Input
@@ -1506,40 +1426,58 @@ export default function ProfilePage() {
                                             type="password"
                                             value={passwordData.currentPassword}
                                             onChange={handlePasswordChange}
-                                            placeholder="Enter current password"
+                                            placeholder="Enter your current password"
                                             required
+                                            className="bg-slate-50 border-slate-200 focus:bg-white focus:border-rose-400 focus:ring-rose-200 transition-all duration-200"
                                         />
                                     </div>
 
-                                    <div>
-                                        <Label htmlFor="newPassword">New Password</Label>
+                                    <div className="space-y-2 group">
+                                        <Label htmlFor="newPassword" className="font-semibold text-slate-700">
+                                            New Password
+                                        </Label>
                                         <Input
                                             id="newPassword"
                                             name="newPassword"
                                             type="password"
                                             value={passwordData.newPassword}
                                             onChange={handlePasswordChange}
-                                            placeholder="Enter new password"
+                                            placeholder="Enter your new password"
                                             required
+                                            className="bg-slate-50 border-slate-200 focus:bg-white focus:border-rose-400 focus:ring-rose-200 transition-all duration-200"
                                         />
+                                        <p className="text-xs text-slate-500 mt-1">Minimum 8 characters with uppercase, lowercase, and numbers</p>
                                     </div>
 
-                                    <div>
-                                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                    <div className="space-y-2 group">
+                                        <Label htmlFor="confirmPassword" className="font-semibold text-slate-700">
+                                            Confirm New Password
+                                        </Label>
                                         <Input
                                             id="confirmPassword"
                                             name="confirmPassword"
                                             type="password"
                                             value={passwordData.confirmPassword}
                                             onChange={handlePasswordChange}
-                                            placeholder="Confirm new password"
+                                            placeholder="Confirm your new password"
                                             required
+                                            className="bg-slate-50 border-slate-200 focus:bg-white focus:border-rose-400 focus:ring-rose-200 transition-all duration-200"
                                         />
                                     </div>
 
-                                    <Button type="submit" disabled={isSaving} variant="outline" className="w-full md:w-auto">
-                                        {isSaving ? 'Updating...' : 'Update Password'}
-                                    </Button>
+                                    <div className="flex gap-3 pt-4">
+                                        <Button 
+                                            type="submit" 
+                                            disabled={isSaving} 
+                                            className="bg-rose-600 hover:bg-rose-700 text-white px-6"
+                                        >
+                                            <Lock className="w-4 h-4 mr-2" />
+                                            {isSaving ? 'Updating...' : 'Update Password'}
+                                        </Button>
+                                        <div className="text-sm text-slate-500 flex items-center">
+                                            Your password will be encrypted and stored securely
+                                        </div>
+                                    </div>
                                 </form>
                             </CardContent>
                         </Card>
