@@ -1,4 +1,4 @@
-const API_URL = process.env.BACKEND_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:3000';
 
 class ApiClient {
   private baseURL: string;
@@ -24,7 +24,15 @@ class ApiClient {
       throw new Error(`API Error: ${response.status}`);
     }
 
-    return response.json();
+    const responseData = await response.json();
+    
+    // Handle nested data structure from backend (data.categories, data.products, etc)
+    // If the response has a 'data' object with the expected property, unwrap it
+    if (responseData.data && typeof responseData.data === 'object') {
+      return responseData.data as T;
+    }
+    
+    return responseData;
   }
 
   get<T>(endpoint: string): Promise<T> {
