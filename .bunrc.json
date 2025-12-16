@@ -1,0 +1,8 @@
+{
+  "bun": {
+    "install": {
+      "exact": true,
+      "peerDependencies": true
+    }
+  }
+}

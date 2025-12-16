@@ -1,0 +1,17 @@
+# Bun configuration file
+# https://bun.sh/docs/config
+
+[install]
+# Use exact versions from package.json
+exact = true
+
+# Auto-install peer dependencies
+peerDependencies = true
+
+[test]
+# Test configuration
+timeout = 5000
+
+[bun]
+# Bun-specific settings
+env = "development"

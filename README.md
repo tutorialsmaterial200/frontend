@@ -11,14 +11,25 @@ yarn dev
 # or
 pnpm dev
 # or
-bun dev
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3020](http://localhost:3020) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Package Managers
+
+This project supports multiple package managers:
+
+- **npm** - Default, included with Node.js
+- **yarn** - Fast, reliable package manager
+- **pnpm** - Disk space efficient
+- **Bun** - Ultra-fast JavaScript runtime and package manager (recommended)
+
+For Bun setup and configuration, see [BUN_SETUP.md](./BUN_SETUP.md)
 
 ## Learn More
 
