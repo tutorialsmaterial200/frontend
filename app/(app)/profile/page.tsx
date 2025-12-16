@@ -95,7 +95,9 @@ export default function ProfilePage() {
                 const user = getUser();
                 if (user) {
                     console.log('📦 Loading initial profile data from localStorage');
-                    setProfileData({
+                    console.log('📝 user.name:', user.name);
+                    console.log('📝 user.email:', user.email);
+                    const initialProfileData = {
                         fullName: user.name || '',
                         email: user.email || '',
                         phone: user.phone || '',
@@ -107,7 +109,9 @@ export default function ProfilePage() {
                         isMerchantVerified: user.isMerchantVerified === true,
                         isRiderVerified: user.isRiderVerified === true,
                         roles: user.roles || [],
-                    });
+                    };
+                    console.log('📊 Initial profileData set:', initialProfileData);
+                    setProfileData(initialProfileData);
                 }
                 
                 // Then, fetch fresh user data from database
@@ -195,7 +199,10 @@ export default function ProfilePage() {
                 // Update state with database data
                 const isVerifiedValue = userData.isVerified === true;
                 console.log('💾 Setting profileData state with isVerified:', isVerifiedValue);
-                setProfileData({
+                console.log('📝 fullName to set:', userData.fullName || userData.name);
+                console.log('📝 email to set:', userData.email);
+                console.log('📝 phone to set:', userData.phone);
+                const newProfileData = {
                     fullName: userData.fullName || userData.name || '',
                     email: userData.email || '',
                     phone: userData.phone || '',
@@ -207,7 +214,9 @@ export default function ProfilePage() {
                     isMerchantVerified: userData.isMerchantVerified === true,
                     isRiderVerified: userData.isRiderVerified === true,
                     roles: userData.roles || [],
-                });
+                };
+                console.log('📊 Complete profileData to set:', newProfileData);
+                setProfileData(newProfileData);
 
                 // Populate rider info if available
                 if (userData.riderInfo) {
@@ -277,7 +286,9 @@ export default function ProfilePage() {
                         
                         const isVerifiedValue = userData.isVerified === true;
                         console.log('💾 Setting profileData from fallback with isVerified:', isVerifiedValue);
-                        setProfileData({
+                        console.log('📝 fullName to set (fallback):', userData.fullName || userData.name);
+                        console.log('📝 email to set (fallback):', userData.email);
+                        const fallbackProfileData = {
                             fullName: userData.fullName || userData.name || '',
                             email: userData.email || '',
                             phone: userData.phone || '',
@@ -289,7 +300,9 @@ export default function ProfilePage() {
                             isMerchantVerified: userData.isMerchantVerified === true,
                             isRiderVerified: userData.isRiderVerified === true,
                             roles: userData.roles || [],
-                        });
+                        };
+                        console.log('📊 Complete fallback profileData to set:', fallbackProfileData);
+                        setProfileData(fallbackProfileData);
                         
                         // Update localStorage with fresh data
                         const updatedUser = {
