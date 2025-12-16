@@ -100,7 +100,7 @@ export default function ProfilePage() {
         verifyAuth();
     }, []);
 
-    const fetchUserProfile = async () => {
+    const fetchUserProfile = async (retryCount = 0, maxRetries = 2) => {
         try {
             const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
             const token = localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                 return;
             }
 
-            console.log('🔍 Fetching user profile from database...');
+            console.log(`🔍 [Attempt ${retryCount + 1}/${maxRetries + 1}] Fetching user profile from database...`);
             console.log('🔗 Backend API URL:', BACKEND_API_URL);
             console.log('🔑 Token exists:', !!token);
             console.log('👤 User ID:', user?.id);
@@ -143,6 +143,7 @@ export default function ProfilePage() {
             }
 
             // Try /users/profile/own first (has richer data like riderInfo, walletBalance, etc.)
+            console.log('📍 Trying endpoint: /users/profile/own');
             let response = await fetch(`${BACKEND_API_URL}/users/profile/own`, {
                 method: 'GET',
                 headers,
@@ -150,7 +151,8 @@ export default function ProfilePage() {
 
             // If /users/profile/own fails, try /users/me
             if (!response.ok) {
-                console.log('⚠️ /users/profile/own failed, trying /users/me');
+                console.log(`⚠️ /users/profile/own failed (${response.status}), trying /users/me`);
+                console.log('📍 Trying endpoint: /users/me');
                 response = await fetch(`${BACKEND_API_URL}/users/me`, {
                     method: 'GET',
                     headers,
@@ -161,21 +163,19 @@ export default function ProfilePage() {
 
             if (response.ok) {
                 const result = await response.json();
-                console.log('✅ Profile data from database:', result);
+                console.log('✅ Profile data successfully fetched from database');
                 console.log('📦 Raw response data:', JSON.stringify(result, null, 2));
                 
                 const userData = result.data || result.user || result;
-                console.log('👤 User data:', userData);
-                console.log('🔐 isVerified from DB:', userData.isVerified);
-                console.log('🔐 isVerified === true:', userData.isVerified === true);
-                console.log('👔 User roles:', userData.roles);
-                console.log('🏪 Is MERCHANT:', userData.roles?.includes('MERCHANT'));
-                console.log('🏪 Merchant verified:', userData.isMerchantVerified);
-                console.log('🖼️ Avatar URL from DB:', userData.avatarUrl);
+                console.log('👤 Extracted user data:', userData);
+                console.log('🔐 isVerified:', userData.isVerified, '(strict ===:', userData.isVerified === true, ')');
+                console.log('👔 Roles:', userData.roles);
+                console.log('🏍️ Has riderInfo:', !!userData.riderInfo);
+                console.log('💰 Wallet Balance:', userData.walletBalance);
 
                 // Update state with database data
                 const isVerifiedValue = userData.isVerified === true;
-                console.log('💾 Setting isVerified to:', isVerifiedValue);
+                console.log('💾 Setting profileData state with isVerified:', isVerifiedValue);
                 setProfileData({
                     fullName: userData.fullName || userData.name || '',
                     email: userData.email || '',
@@ -192,7 +192,7 @@ export default function ProfilePage() {
 
                 // Populate rider info if available
                 if (userData.riderInfo) {
-                    console.log('🏍️ Populating riderInfo:', userData.riderInfo);
+                    console.log('🏍️ Found riderInfo, populating rider KYC data');
                     setRiderKYCData({
                         vehicleType: userData.riderInfo.vehicleType || '',
                         vehicleModel: userData.riderInfo.vehicleModel || '',
@@ -214,28 +214,28 @@ export default function ProfilePage() {
                     phone: userData.phone,
                     address: userData.address?.street || userData.address,
                     city: userData.address?.city || userData.city || userData.state,
-                    province: userData.province || userData.state,
-                    avatarUrl: userData.avatarUrl || '',
+                    province: userData.address?.state || userData.province || userData.state,
+                    avatarUrl: userData.avatarUrl || userData.profilePictureUrl || '',
                     isVerified: userData.isVerified === true,
                     isMerchantVerified: userData.isMerchantVerified === true,
                     isRiderVerified: userData.isRiderVerified === true,
                     roles: userData.roles || [],
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                console.log('💾 Updated localStorage with DB data');
-                console.log('📦 Stored user:', updatedUser);
-                console.log('🖼️ Avatar URL stored:', updatedUser.avatarUrl);
+                console.log('💾 localStorage updated with fresh DB data');
+                console.log('📦 Stored user object:', updatedUser);
                 
                 // Dispatch event to update navbar
                 window.dispatchEvent(new Event('auth-change'));
             } else {
-                console.log('⚠️ API response not OK, status:', response.status);
+                console.log(`⚠️ API response not OK, status: ${response.status}`);
                 const errorData = await response.json().catch(() => ({}));
                 console.log('❌ Error response:', errorData);
                 console.log('⚠️ Trying /users/info endpoint as fallback');
                 
                 // Try /users/info as fallback
                 try {
+                    console.log('📍 Trying fallback endpoint: /users/info');
                     let fallbackResponse = await fetch(`${BACKEND_API_URL}/users/info`, {
                         method: 'GET',
                         headers,
@@ -244,6 +244,7 @@ export default function ProfilePage() {
                     // If /users/info also fails, try /users/profile/own as last resort
                     if (!fallbackResponse.ok) {
                         console.log('⚠️ /users/info also failed, trying /users/profile/own as last resort');
+                        console.log('📍 Trying last resort endpoint: /users/profile/own');
                         fallbackResponse = await fetch(`${BACKEND_API_URL}/users/profile/own`, {
                             method: 'GET',
                             headers,
@@ -252,11 +253,11 @@ export default function ProfilePage() {
                     
                     if (fallbackResponse.ok) {
                         const fallbackResult = await fallbackResponse.json();
-                        console.log('✅ Fallback /users/info successful:', fallbackResult);
+                        console.log('✅ Fallback endpoint successful');
                         const userData = fallbackResult.data || fallbackResult;
                         
                         const isVerifiedValue = userData.isVerified === true;
-                        console.log('💾 Setting isVerified to (from /users/info):', isVerifiedValue);
+                        console.log('💾 Setting profileData from fallback with isVerified:', isVerifiedValue);
                         setProfileData({
                             fullName: userData.fullName || userData.name || '',
                             email: userData.email || '',
@@ -313,11 +314,23 @@ export default function ProfilePage() {
                 }
             }
         } catch (error) {
-            console.error('❌ Error fetching user profile:', error);
+            console.error('❌ Network error fetching user profile:', error);
             console.error('❌ Error details:', error instanceof Error ? error.message : 'Unknown error');
-            // Fallback to localStorage
+            
+            // Retry logic: if we haven't reached max retries, try again
+            if (retryCount < maxRetries) {
+                console.log(`🔄 Retrying in 1 second (attempt ${retryCount + 2}/${maxRetries + 1})...`);
+                setTimeout(() => {
+                    fetchUserProfile(retryCount + 1, maxRetries);
+                }, 1000);
+                return;
+            }
+            
+            console.log('⚠️ Max retries reached, falling back to localStorage');
+            // Fallback to localStorage after max retries
             const user = getUser();
             if (user) {
+                console.log('📦 Using cached localStorage data');
                 setProfileData({
                     fullName: user.name || '',
                     email: user.email || '',
