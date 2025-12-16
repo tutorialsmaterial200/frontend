@@ -1080,6 +1080,26 @@ export default function ProfilePage() {
                         </div>
                     )}
 
+                    {/* Quick Info Card - Show fetched data from DB */}
+                    <Card className="bg-blue-50 border-blue-200 mb-6">
+                        <CardContent className="pt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Full Name</p>
+                                    <p className="text-lg font-semibold">{profileData.fullName || 'Not set'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Email</p>
+                                    <p className="text-lg font-semibold">{profileData.email || 'Not set'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Phone Number</p>
+                                    <p className="text-lg font-semibold">{profileData.phone || 'Not set'}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <div className="space-y-6">
                         {/* Profile Information */}
                         <Card>
