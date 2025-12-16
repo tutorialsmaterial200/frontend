@@ -117,9 +117,9 @@ export default function ProfilePage() {
                         city: user.city || '',
                         province: user.province || '',
                         avatarUrl: user.avatarUrl || '',
-                        isVerified: user.isVerified || false,
-                        isMerchantVerified: user.isMerchantVerified || false,
-                        isRiderVerified: user.isRiderVerified || false,
+                        isVerified: user.isVerified === true,
+                        isMerchantVerified: user.isMerchantVerified === true,
+                        isRiderVerified: user.isRiderVerified === true,
                         roles: user.roles || [],
                     });
                 }
@@ -157,12 +157,15 @@ export default function ProfilePage() {
                 const userData = result.data || result.user || result;
                 console.log('👤 User data:', userData);
                 console.log('🔐 isVerified from DB:', userData.isVerified);
+                console.log('🔐 isVerified === true:', userData.isVerified === true);
                 console.log('👔 User roles:', userData.roles);
                 console.log('🏪 Is MERCHANT:', userData.roles?.includes('MERCHANT'));
                 console.log('🏪 Merchant verified:', userData.isMerchantVerified);
                 console.log('🖼️ Avatar URL from DB:', userData.avatarUrl);
 
                 // Update state with database data
+                const isVerifiedValue = userData.isVerified === true;
+                console.log('💾 Setting isVerified to:', isVerifiedValue);
                 setProfileData({
                     fullName: userData.fullName || userData.name || '',
                     email: userData.email || '',
@@ -171,7 +174,7 @@ export default function ProfilePage() {
                     city: userData.city || userData.state || '',
                     province: userData.province || userData.state || '',
                     avatarUrl: userData.avatarUrl || '',
-                    isVerified: userData.isVerified === true,
+                    isVerified: isVerifiedValue,
                     isMerchantVerified: userData.isMerchantVerified === true,
                     isRiderVerified: userData.isRiderVerified === true,
                     roles: userData.roles || [],
@@ -214,9 +217,9 @@ export default function ProfilePage() {
                         city: user.city || '',
                         province: user.province || '',
                         avatarUrl: user.avatarUrl || '',
-                        isVerified: user.isVerified || false,
-                        isMerchantVerified: user.isMerchantVerified || false,
-                        isRiderVerified: user.isRiderVerified || false,
+                        isVerified: user.isVerified === true,
+                        isMerchantVerified: user.isMerchantVerified === true,
+                        isRiderVerified: user.isRiderVerified === true,
                         roles: user.roles || [],
                     });
                 }
@@ -235,9 +238,9 @@ export default function ProfilePage() {
                     city: user.city || '',
                     province: user.province || '',
                     avatarUrl: user.avatarUrl || '',
-                    isVerified: user.isVerified || false,
-                    isMerchantVerified: user.isMerchantVerified || false,
-                    isRiderVerified: user.isRiderVerified || false,
+                    isVerified: user.isVerified === true,
+                    isMerchantVerified: user.isMerchantVerified === true,
+                    isRiderVerified: user.isRiderVerified === true,
                     roles: user.roles || [],
                 });
             }

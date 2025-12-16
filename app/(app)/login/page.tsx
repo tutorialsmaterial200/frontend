@@ -140,7 +140,7 @@ export default function LoginPage() {
                 id: userData.id,
                 email: userData.email,
                 name: userData.fullName || email.split('@')[0],
-                isVerified: userData.isVerified || false,
+                isVerified: userData.isVerified === true,
                 roles: userData.roles || [],
             };
             
@@ -209,7 +209,7 @@ export default function LoginPage() {
                     id: userData.id,
                     phone: phoneNumber,
                     name: userData.fullName || 'User',
-                    isVerified: userData.isVerified || false,
+                    isVerified: userData.isVerified === true,
                     roles: userData.roles || [],
                 };
                 
@@ -260,7 +260,7 @@ export default function LoginPage() {
                 id: userData.id,
                 email: userData.email,
                 name: userData.fullName || `${provider} User`,
-                isVerified: userData.isVerified || false,
+                isVerified: userData.isVerified === true,
                 roles: userData.roles || [],
             };
             
