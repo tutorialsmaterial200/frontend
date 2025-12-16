@@ -6,7 +6,8 @@
     "dev": "next dev -p 3020 --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "bun test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
